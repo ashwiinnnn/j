@@ -5,11 +5,10 @@ Run: python build_deck.py
 """
 
 from pptx import Presentation
-from pptx.util import Inches, Pt, Emu
+from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
-from pptx.oxml.ns import qn
 
 # ---------------------------------------------------------------- palette --
 BG = RGBColor(0xF5, 0xF5, 0xF7)        # warm off-white / matte silver
@@ -40,7 +39,6 @@ def add_slide():
     bg.fill.fore_color.rgb = BG
     bg.line.fill.background()
     bg.shadow.inherit = False
-    # push background behind everything else added later
     spTree = slide.shapes._spTree
     spTree.remove(bg._element)
     spTree.insert(2, bg._element)
@@ -68,7 +66,7 @@ def add_card(slide, left, top, width, height, fill=CARD, line_color=None, radius
 
 def add_text(slide, left, top, width, height, text, size=18, color=INK,
              bold=False, italic=False, align=PP_ALIGN.LEFT, font=FONT_BODY,
-             anchor=MSO_ANCHOR.TOP, line_spacing=1.0, letter_spacing=None):
+             anchor=MSO_ANCHOR.TOP, line_spacing=1.0):
     box = slide.shapes.add_textbox(left, top, width, height)
     tf = box.text_frame
     tf.word_wrap = True
@@ -95,7 +93,6 @@ def add_text(slide, left, top, width, height, text, size=18, color=INK,
 
 def add_rich(slide, left, top, width, height, segments, size=18, align=PP_ALIGN.LEFT,
              font=FONT_BODY, anchor=MSO_ANCHOR.TOP, line_spacing=1.0):
-    """segments: list of (text, color, bold, italic) tuples, rendered as one paragraph."""
     box = slide.shapes.add_textbox(left, top, width, height)
     tf = box.text_frame
     tf.word_wrap = True
@@ -121,12 +118,7 @@ def add_rich(slide, left, top, width, height, segments, size=18, align=PP_ALIGN.
 
 def kicker(slide, text, top=Inches(0.7)):
     add_text(slide, MARGIN, top, Inches(8), Inches(0.4), text,
-              size=12, color=GRAY, font=FONT_MONO, align=PP_ALIGN.LEFT)
-
-
-def footer(slide, text):
-    add_text(slide, MARGIN, Inches(7.05), Inches(10), Inches(0.35), text,
-              size=10, color=GRAY, font=FONT_MONO, align=PP_ALIGN.LEFT)
+             size=12, color=GRAY, font=FONT_MONO, align=PP_ALIGN.LEFT)
 
 
 def set_notes(slide, text):
@@ -137,14 +129,14 @@ def set_notes(slide, text):
 s = add_slide()
 kicker(s, "a talk for amity law students, in the hall i once sat in")
 add_rich(s, MARGIN, Inches(1.7), Inches(11.5), Inches(3.2),
-          [("hey i am ", INK, False, False), ("ashwin", VERMILION, False, True)],
-          size=60, font=FONT_HEAD, line_spacing=1.0)
+         [("hey i am ", INK, False, False), ("ashwin", VERMILION, False, True)],
+         size=60, font=FONT_HEAD, line_spacing=1.0)
 add_text(s, MARGIN, Inches(3.3), Inches(10.5), Inches(1.4),
-          "and the Japanese government rejected me once. A year later, they gave me a scholarship anyway.",
-          size=24, color=INK, font=FONT_HEAD, line_spacing=1.15)
+         "and the Japanese government rejected me once. A year later, they gave me a scholarship anyway.",
+         size=24, color=INK, font=FONT_HEAD, line_spacing=1.15)
 add_text(s, MARGIN, Inches(6.4), Inches(6), Inches(0.5),
-          "0 DAYS MARGIN ON THE DEADLINE     ·     10 DAYS THE POST TOOK TO ARRIVE",
-          size=11, color=GRAY, font=FONT_MONO)
+         "0 DAYS MARGIN ON THE DEADLINE     ·     10 DAYS THE POST TOOK TO ARRIVE",
+         size=11, color=GRAY, font=FONT_MONO)
 set_notes(s, "Say the line as written, don't perform it. Let the silence after "
              "'gave me a scholarship anyway' sit for a beat before moving on.")
 
@@ -152,41 +144,39 @@ set_notes(s, "Say the line as written, don't perform it. Let the silence after "
 s = add_slide()
 kicker(s, "chapter one")
 add_text(s, MARGIN, Inches(1.3), Inches(11), Inches(1.8),
-          "A talk for Amity law students,\nin the hall I once sat in.",
-          size=44, color=INK, font=FONT_HEAD, line_spacing=1.05)
+         "A talk for Amity law students,\nin the hall I once sat in.",
+         size=44, color=INK, font=FONT_HEAD, line_spacing=1.05)
 add_rich(s, MARGIN, Inches(3.6), Inches(9.5), Inches(1.6),
-          [("I almost didn't apply ", INK, False, True),
-           ("to the thing that changed my life.", INK, False, False)],
-          size=22, font=FONT_HEAD, line_spacing=1.2)
+         [("I almost didn't apply ", INK, False, True),
+            ("to the thing that changed my life.", INK, False, False)],
+         size=22, font=FONT_HEAD, line_spacing=1.2)
 add_text(s, MARGIN, Inches(4.7), Inches(9.5), Inches(1.5),
-          "Not because I didn't want it. Because wanting it, out loud, felt riskier "
-          "than not trying at all. If that sounds familiar, good. Stay a while.",
-          size=16, color=GRAY, font=FONT_BODY, line_spacing=1.3)
+         "Not because I didn't want it. Because wanting it, out loud, felt riskier "
+         "than not trying at all. If that sounds familiar, good. Stay a while.",
+         size=16, color=GRAY, font=FONT_BODY, line_spacing=1.3)
 set_notes(s, "This is the thesis of the whole talk, said early and plainly. Don't rush it.")
 
 # ================================================================= SLIDE 3
 s = add_slide()
 kicker(s, "chapter two — the evidence")
 add_text(s, MARGIN, Inches(1.3), Inches(7), Inches(1.6),
-          "Bad photo.\nWorse haircut.", size=44, color=INK, font=FONT_HEAD, line_spacing=1.05)
+         "Bad photo.\nWorse haircut.", size=44, color=INK, font=FONT_HEAD, line_spacing=1.05)
 
-# mock ID card
 card_l, card_t, card_w, card_h = Inches(8.2), Inches(1.4), Inches(4.2), Inches(2.6)
 add_card(s, card_l, card_t, card_w, card_h, fill=CARD)
 add_text(s, card_l + Inches(0.3), card_t + Inches(0.25), Inches(3.6), Inches(0.3),
-          "AMITY UNIVERSITY", size=10, color=GRAY, font=FONT_MONO)
-photo = add_card(s, card_l + Inches(0.3), card_t + Inches(0.7), Inches(1.1), Inches(1.4),
-                   fill=BG, radius=False)
+         "AMITY UNIVERSITY", size=10, color=GRAY, font=FONT_MONO)
+add_card(s, card_l + Inches(0.3), card_t + Inches(0.7), Inches(1.1), Inches(1.4), fill=BG, radius=False)
 add_text(s, card_l + Inches(1.6), card_t + Inches(0.75), Inches(2.3), Inches(0.4),
-          "Ashwin", size=18, color=INK, font=FONT_HEAD, bold=True)
+         "Ashwin", size=18, color=INK, font=FONT_HEAD, bold=True)
 add_text(s, card_l + Inches(1.6), card_t + Inches(1.2), Inches(2.4), Inches(0.6),
-          "B.A. LL.B. · Batch of '17\nID: undisclosed, mercifully",
-          size=10, color=GRAY, font=FONT_MONO, line_spacing=1.2)
+         "B.A. LL.B. · Batch of '17\nID: undisclosed, mercifully",
+         size=10, color=GRAY, font=FONT_MONO, line_spacing=1.2)
 
 add_text(s, MARGIN, Inches(4.3), Inches(10), Inches(1.6),
-          "Kept it anyway — you don't throw out the evidence. The name on this "
-          "degree didn't decide what I got to do next. I did.",
-          size=18, color=INK, font=FONT_HEAD, line_spacing=1.3)
+         "Kept it anyway — you don't throw out the evidence. The name on this "
+         "degree didn't decide what I got to do next. I did.",
+         size=18, color=INK, font=FONT_HEAD, line_spacing=1.3)
 set_notes(s, "First real laugh lives here. Lean into the haircut line, self-deprecating, "
              "then pivot into the 'I did' line so it lands as the point, not just a joke.")
 
@@ -194,60 +184,56 @@ set_notes(s, "First real laugh lives here. Lean into the haircut line, self-depr
 s = add_slide()
 kicker(s, "an interactive confession")
 add_text(s, MARGIN, Inches(1.2), Inches(11), Inches(1.6),
-          "We put a stupid amount of pressure\non twenty-year-olds to have a five-year plan.",
-          size=32, color=INK, font=FONT_HEAD, line_spacing=1.1)
+         "We put a stupid amount of pressure\non twenty-year-olds to have a five-year plan.",
+         size=32, color=INK, font=FONT_HEAD, line_spacing=1.1)
 
-# two comparison cards
-left_card = add_card(s, MARGIN, Inches(3.3), Inches(5.4), Inches(2.8), fill=CARD)
+add_card(s, MARGIN, Inches(3.3), Inches(5.4), Inches(2.8), fill=CARD)
 add_text(s, MARGIN + Inches(0.4), Inches(3.6), Inches(4.6), Inches(0.4),
-          "A FIVE-YEAR PLAN", size=12, color=GRAY, font=FONT_MONO)
+         "A FIVE-YEAR PLAN", size=12, color=GRAY, font=FONT_MONO)
 add_text(s, MARGIN + Inches(0.4), Inches(4.2), Inches(4.6), Inches(1.5),
-          "Some of you have one.\nGenuinely — respect.",
-          size=22, color=GRAY, font=FONT_HEAD, italic=True, line_spacing=1.2)
+         "Some of you have one.\nGenuinely — respect.",
+         size=22, color=GRAY, font=FONT_HEAD, italic=True, line_spacing=1.2)
 
 right_left = Inches(7.1)
-right_card = add_card(s, right_left, Inches(3.3), Inches(5.4), Inches(2.8), fill=CARD)
+add_card(s, right_left, Inches(3.3), Inches(5.4), Inches(2.8), fill=CARD)
 add_text(s, right_left + Inches(0.4), Inches(3.6), Inches(4.6), Inches(0.4),
-          "\"LET ME SURVIVE THIS SEMESTER\"", size=12, color=VERMILION, font=FONT_MONO)
+         "\"LET ME SURVIVE THIS SEMESTER\"", size=12, color=VERMILION, font=FONT_MONO)
 add_text(s, right_left + Inches(0.4), Inches(4.2), Inches(4.6), Inches(1.7),
-          "Also a plan.\nNobody tells you this counts.",
-          size=22, color=INK, font=FONT_HEAD, italic=True, line_spacing=1.2)
+         "Also a plan.\nNobody tells you this counts.",
+         size=22, color=INK, font=FONT_HEAD, italic=True, line_spacing=1.2)
 set_notes(s, "Ask for a show of hands on who has a real five-year plan. Acknowledge them "
-             "honestly, then land on the right card without framing it as an underdog win — "
-             "it's just what actually happened, and it was fine.")
+             "honestly, then land on the right card without framing it as an underdog win.")
 
 # ================================================================= SLIDE 5
 s = add_slide()
 kicker(s, "chapter three — the crucial one")
 add_text(s, MARGIN, Inches(1.2), Inches(10.5), Inches(1.4),
-          "Amity is not your excuse.", size=44, color=INK, font=FONT_HEAD)
+         "Amity is not your excuse.", size=44, color=INK, font=FONT_HEAD)
 
-callout = add_card(s, MARGIN, Inches(2.9), Inches(7.4), Inches(2.1), fill=CARD)
+add_card(s, MARGIN, Inches(2.9), Inches(7.4), Inches(2.1), fill=CARD)
 add_text(s, MARGIN + Inches(0.4), Inches(3.15), Inches(6.6), Inches(0.35),
-          "ORGANISATIONAL BEHAVIOUR — CLASS NOTES", size=11, color=VERMILION, font=FONT_MONO)
+         "ORGANISATIONAL BEHAVIOUR — CLASS NOTES", size=11, color=VERMILION, font=FONT_MONO)
 add_text(s, MARGIN + Inches(0.4), Inches(3.6), Inches(6.6), Inches(1.3),
-          "Dipanwita Ma'am's class. Nobody in that room was thinking "
-          "\"this will matter someday.\" Everyone was thinking about the exam, "
-          "and honestly, lunch.",
-          size=16, color=INK, font=FONT_BODY, line_spacing=1.3)
+         "Dipanwita Ma'am's class. Nobody in that room was thinking "
+         "\"this will matter someday.\" Everyone was thinking about the exam, "
+         "and honestly, lunch.",
+         size=16, color=INK, font=FONT_BODY, line_spacing=1.3)
 
 add_text(s, MARGIN, Inches(5.35), Inches(10.5), Inches(1.3),
-          "An easy college is not the same thing as an easy ceiling. "
-          "Nobody hands you that ceiling. You build it yourself.",
-          size=18, color=GRAY, font=FONT_HEAD, italic=True, line_spacing=1.3)
-set_notes(s, "Say the Amity jokes out loud yourself first, before the room does. That's what "
-             "earns you the next line: nobody at the embassy interview asked which college "
-             "you went to. They asked if you could talk for fifteen minutes without notes.")
+         "An easy college is not the same thing as an easy ceiling. "
+         "Nobody hands you that ceiling. You build it yourself.",
+         size=18, color=GRAY, font=FONT_HEAD, italic=True, line_spacing=1.3)
+set_notes(s, "Say the Amity jokes out loud yourself first, before the room does.")
 
 # ================================================================= SLIDE 6
 s = add_slide()
 kicker(s, "chapter four")
 add_text(s, MARGIN, Inches(1.2), Inches(11), Inches(1.4),
-          "Then college got cancelled, sort of.", size=38, color=INK, font=FONT_HEAD)
+         "Then college got cancelled, sort of.", size=38, color=INK, font=FONT_HEAD)
 add_text(s, MARGIN, Inches(2.4), Inches(10.5), Inches(1.3),
-          "Classrooms became screens. You could attend a full day of lectures "
-          "without changing out of pyjamas — and most of us did, repeatedly.",
-          size=17, color=GRAY, font=FONT_BODY, line_spacing=1.3)
+         "Classrooms became screens. You could attend a full day of lectures "
+         "without changing out of pyjamas — and most of us did, repeatedly.",
+         size=17, color=GRAY, font=FONT_BODY, line_spacing=1.3)
 
 tile_w = Inches(3.55)
 tile_gap = Inches(0.25)
@@ -261,48 +247,46 @@ for i, (label, body, label_color, fill) in enumerate(tiles):
     left = MARGIN + i * (tile_w + tile_gap)
     add_card(s, left, tile_top, tile_w, Inches(2.4), fill=fill)
     add_text(s, left + Inches(0.3), tile_top + Inches(0.25), tile_w - Inches(0.6), Inches(0.35),
-              label, size=11, color=label_color, font=FONT_MONO)
+             label, size=11, color=label_color, font=FONT_MONO)
     add_text(s, left + Inches(0.3), tile_top + Inches(0.75), tile_w - Inches(0.6), Inches(1.5),
-              body, size=15, color=INK, font=FONT_HEAD, line_spacing=1.25)
-set_notes(s, "Keep this fast — everyone in the room lived it. Let them laugh at the "
-             "pyjamas line, then move on.")
+             body, size=15, color=INK, font=FONT_HEAD, line_spacing=1.25)
+set_notes(s, "Keep this fast — everyone in the room lived it.")
 
 # ================================================================= SLIDE 7
 s = add_slide()
 kicker(s, "chapter five")
 add_text(s, MARGIN, Inches(1.3), Inches(11), Inches(1.4),
-          "Then I found Japan, by accident.", size=40, color=INK, font=FONT_HEAD)
+         "Then I found Japan, by accident.", size=40, color=INK, font=FONT_HEAD)
 add_text(s, MARGIN, Inches(2.6), Inches(10.3), Inches(1.8),
-          "No childhood dream. I wasn't the kid drawing torii gates in the margins. "
-          "One random evening, curiosity, a rabbit hole of reading until 1am — which I "
-          "generously called \"research\" the next morning.",
-          size=18, color=INK, font=FONT_BODY, line_spacing=1.35)
-set_notes(s, "Keep this light and quick — it's the setup, not the point, of this chapter.")
+         "No childhood dream. I wasn't the kid drawing torii gates in the margins. "
+         "One random evening, curiosity, a rabbit hole of reading until 1am — which I "
+         "generously called \"research\" the next morning.",
+         size=18, color=INK, font=FONT_BODY, line_spacing=1.35)
+set_notes(s, "Keep this light and quick.")
 
 # ================================================================= SLIDE 8
 s = add_slide()
 kicker(s, "chapter five, continued")
-card = add_card(s, MARGIN, Inches(1.4), Inches(10.8), Inches(2.6), fill=CARD, line_color=None)
+add_card(s, MARGIN, Inches(1.4), Inches(10.8), Inches(2.6), fill=CARD, line_color=None)
 add_text(s, MARGIN + Inches(0.5), Inches(1.7), Inches(9.8), Inches(0.35),
-          "EMBASSY RECOMMENDATION ROUTE — YEAR ONE", size=11, color=GRAY, font=FONT_MONO)
+         "EMBASSY RECOMMENDATION ROUTE — YEAR ONE", size=11, color=GRAY, font=FONT_MONO)
 add_text(s, MARGIN + Inches(0.5), Inches(2.15), Inches(4), Inches(0.6),
-          "REJECTED", size=28, color=VERMILION, font=FONT_HEAD, bold=True)
+         "REJECTED", size=28, color=VERMILION, font=FONT_HEAD, bold=True)
 add_text(s, MARGIN + Inches(0.5), Inches(2.95), Inches(9.5), Inches(0.9),
-          "More applicants. Fewer seats. Zero mercy. I got a polite no.",
-          size=18, color=INK, font=FONT_BODY, line_spacing=1.3)
-set_notes(s, "Say 'I got a polite no' flat, no self-pity, no false humility either. "
-             "That flatness is the honesty. Sets up the stakes for the next slide.")
+         "More applicants. Fewer seats. Zero mercy. I got a polite no.",
+         size=18, color=INK, font=FONT_BODY, line_spacing=1.3)
+set_notes(s, "Say 'I got a polite no' flat, no self-pity.")
 
 # ================================================================= SLIDE 9
 s = add_slide()
 kicker(s, "chapter six — the gamble")
 add_text(s, MARGIN, Inches(1.1), Inches(10), Inches(1.1),
-          "The courier gamble.", size=38, color=INK, font=FONT_HEAD)
+         "The courier gamble.", size=38, color=INK, font=FONT_HEAD)
 
 receipt_l, receipt_t, receipt_w, receipt_h = MARGIN, Inches(2.2), Inches(7.2), Inches(4.5)
 add_card(s, receipt_l, receipt_t, receipt_w, receipt_h, fill=CARD)
 add_text(s, receipt_l + Inches(0.4), receipt_t + Inches(0.3), Inches(4.5), Inches(0.3),
-          "INTL. EXPRESS COURIER", size=11, color=GRAY, font=FONT_MONO)
+         "INTL. EXPRESS COURIER", size=11, color=GRAY, font=FONT_MONO)
 
 rows = [
     ("ORIGIN", "NEW DELHI, IN"),
@@ -315,16 +299,15 @@ rows = [
 row_top = receipt_t + Inches(0.9)
 for label, val in rows:
     add_text(s, receipt_l + Inches(0.4), row_top, Inches(2.2), Inches(0.35),
-              label, size=11, color=GRAY, font=FONT_MONO)
+             label, size=11, color=GRAY, font=FONT_MONO)
     add_text(s, receipt_l + Inches(2.8), row_top, Inches(3.6), Inches(0.35),
-              val, size=11, color=(VERMILION if label == "STATUS" else INK), font=FONT_MONO)
+             val, size=11, color=(VERMILION if label == "STATUS" else INK), font=FONT_MONO)
     row_top += Inches(0.42)
 
 add_text(s, receipt_l + Inches(0.4), receipt_t + Inches(3.75), Inches(6.4), Inches(0.65),
-          "please don't copy this bit",
-          size=12, color=GRAY, font=FONT_BODY, italic=True)
+         "please don't copy this bit",
+         size=12, color=GRAY, font=FONT_BODY, italic=True)
 
-# stamp
 stamp = s.shapes.add_shape(MSO_SHAPE.OVAL, Inches(9.1), Inches(2.4), Inches(3.4), Inches(1.9))
 stamp.rotation = -8
 stamp.fill.background()
@@ -345,17 +328,16 @@ srun.font.color.rgb = VERMILION
 srun.font.name = FONT_MONO
 
 add_text(s, Inches(9.0), Inches(4.6), Inches(3.6), Inches(2),
-          "Handed over exactly one day before the post deadline. The clerk asked "
-          "if I was sure this would make it. I said yes. I was not sure.",
-          size=13, color=GRAY, font=FONT_BODY, line_spacing=1.3)
-set_notes(s, "Your best visual — let it hold the room a few extra seconds before talking "
-             "over it. Deliver 'please don't copy this bit' deadpan, like a disclaimer.")
+         "Handed over exactly one day before the post deadline. The clerk asked "
+         "if I was sure this would make it. I said yes. I was not sure.",
+         size=13, color=GRAY, font=FONT_BODY, line_spacing=1.3)
+set_notes(s, "Your best visual — let it hold the room a few extra seconds.")
 
 # ================================================================= SLIDE 10
 s = add_slide()
 kicker(s, "chapter seven")
 add_text(s, MARGIN, Inches(1.3), Inches(10), Inches(1.2),
-          "Then, nothing. For months.", size=40, color=INK, font=FONT_HEAD)
+         "Then, nothing. For months.", size=40, color=INK, font=FONT_HEAD)
 
 months = ["JAN", "FEB", "MAR", "APR"]
 pill_w = Inches(1.6)
@@ -389,12 +371,11 @@ for i, m in enumerate(months):
     prun.font.color.rgb = VERMILION if is_last else GRAY
 
 add_text(s, MARGIN, Inches(4.4), Inches(10.3), Inches(1.8),
-          "No tracking number. No update. No way to check in. You send something "
-          "out, and then you just live with the not-knowing — and mostly, you go "
-          "back to class and forget about it.",
-          size=18, color=INK, font=FONT_BODY, line_spacing=1.35)
-set_notes(s, "Slow down here — this is the emotional trough. Get specific about what the "
-             "anxiety felt like (rereading the proposal at 2am) instead of staying abstract.")
+         "No tracking number. No update. No way to check in. You send something "
+         "out, and then you just live with the not-knowing — and mostly, you go "
+         "back to class and forget about it.",
+         size=18, color=INK, font=FONT_BODY, line_spacing=1.35)
+set_notes(s, "Slow down here — this is the emotional trough.")
 
 # ================================================================= SLIDE 11
 s = add_slide()
@@ -417,21 +398,19 @@ s2run.font.name = FONT_HEAD
 s2run.font.color.rgb = VERMILION
 
 add_text(s, Inches(4.9), Inches(5.15), Inches(3.5), Inches(0.7),
-          "MEXT SCHOLARSHIP · APRIL\nKyushu University",
-          size=11, color=GRAY, font=FONT_MONO, align=PP_ALIGN.CENTER, line_spacing=1.2)
+         "MEXT SCHOLARSHIP · APRIL\nKyushu University",
+         size=11, color=GRAY, font=FONT_MONO, align=PP_ALIGN.CENTER, line_spacing=1.2)
 add_text(s, Inches(1.9), Inches(6.3), Inches(9.5), Inches(0.8),
-          "You can't lose an opportunity you never applied for. But you also can't win it.",
-          size=16, color=INK, font=FONT_HEAD, italic=True, align=PP_ALIGN.CENTER)
-set_notes(s, "Say what you actually expected before opening it — the graceful rejection "
-             "speech you'd already written in your head. That's what makes the reveal land. "
-             "Let the silence do the work, same as slide one.")
+         "You can't lose an opportunity you never applied for. But you also can't win it.",
+         size=16, color=INK, font=FONT_HEAD, italic=True, align=PP_ALIGN.CENTER)
+set_notes(s, "Say what you actually expected before opening it.")
 
 # ================================================================= SLIDE 12
 s = add_slide()
 kicker(s, "chapter nine, Fukuoka")
 add_text(s, MARGIN, Inches(1.2), Inches(11), Inches(1.2),
-          "Landing, and immediately drowning a little.",
-          size=34, color=INK, font=FONT_HEAD)
+         "Landing, and immediately drowning a little.",
+         size=34, color=INK, font=FONT_HEAD)
 
 col_w = Inches(5.4)
 left_col = MARGIN
@@ -439,26 +418,25 @@ right_col = Inches(7.1)
 col_top = Inches(2.7)
 add_card(s, left_col, col_top, col_w, Inches(3.6), fill=CARD)
 add_text(s, left_col + Inches(0.4), col_top + Inches(0.3), col_w - Inches(0.8), Inches(0.35),
-          "WHAT TRAVELS WELL ONLINE", size=11, color=GRAY, font=FONT_MONO)
+         "WHAT TRAVELS WELL ONLINE", size=11, color=GRAY, font=FONT_MONO)
 add_text(s, left_col + Inches(0.4), col_top + Inches(0.8), col_w - Inches(0.8), Inches(2.6),
-          "Cleanliness\nPunctuality\nConvenience stores\nFood, nature, the universities",
-          size=16, color=INK, font=FONT_BODY, line_spacing=1.5)
+         "Cleanliness\nPunctuality\nConvenience stores\nFood, nature, the universities",
+         size=16, color=INK, font=FONT_BODY, line_spacing=1.5)
 
 add_card(s, right_col, col_top, col_w, Inches(3.6), fill=CARD)
 add_text(s, right_col + Inches(0.4), col_top + Inches(0.3), col_w - Inches(0.8), Inches(0.35),
-          "WHAT DOESN'T MAKE THE REEL", size=11, color=VERMILION, font=FONT_MONO)
+         "WHAT DOESN'T MAKE THE REEL", size=11, color=VERMILION, font=FONT_MONO)
 add_text(s, right_col + Inches(0.4), col_top + Inches(0.8), col_w - Inches(0.8), Inches(2.6),
-          "The language wall\nGetting lost, badly\nStarting from zero, socially\n"
-          "A washing machine that won the first round",
-          size=16, color=INK, font=FONT_BODY, line_spacing=1.5)
-set_notes(s, "Tell the wrong-platform-at-Hakata story out loud in full, with the groceries "
-             "detail. Land on: gratitude and struggle can happen at the exact same time.")
+         "The language wall\nGetting lost, badly\nStarting from zero, socially\n"
+         "A washing machine that won the first round",
+         size=16, color=INK, font=FONT_BODY, line_spacing=1.5)
+set_notes(s, "Tell the wrong-platform-at-Hakata story out loud.")
 
 # ================================================================= SLIDE 13
 s = add_slide()
 kicker(s, "chapter ten — the useful part")
 add_text(s, MARGIN, Inches(1.1), Inches(10.5), Inches(1.1),
-          "What actually helped, in the end.", size=34, color=INK, font=FONT_HEAD)
+         "What actually helped, in the end.", size=34, color=INK, font=FONT_HEAD)
 
 takeaways = [
     ("1", "You can't lose a game\nyou don't play.", "Apply even when your odds look stupid. Especially then."),
@@ -478,26 +456,23 @@ for i, (num, title, sub) in enumerate(takeaways):
     top = grid_top + row * (card_h + gap_y)
     add_card(s, left, top, card_w, card_h, fill=CARD)
     add_text(s, left + Inches(0.35), top + Inches(0.2), Inches(1), Inches(0.5),
-              num, size=26, color=VERMILION, font=FONT_HEAD, bold=True)
+             num, size=26, color=VERMILION, font=FONT_HEAD, bold=True)
     add_text(s, left + Inches(0.35), top + Inches(0.75), card_w - Inches(0.7), Inches(0.75),
-              title, size=17, color=INK, font=FONT_HEAD, bold=True, line_spacing=1.1)
+             title, size=17, color=INK, font=FONT_HEAD, bold=True, line_spacing=1.1)
     add_text(s, left + Inches(0.35), top + Inches(1.5), card_w - Inches(0.7), Inches(0.6),
-              sub, size=12, color=GRAY, font=FONT_BODY, line_spacing=1.2)
-set_notes(s, "This is the 'gyan section' — say that out loud, literally. It gives the room "
-             "permission to switch from listening to taking notes. Card 4 is a callback to "
-             "the Amity chapter — name that connection explicitly.")
+             sub, size=12, color=GRAY, font=FONT_BODY, line_spacing=1.2)
+set_notes(s, "This is the 'gyan section' — say that out loud.")
 
 # ================================================================= SLIDE 14
 s = add_slide()
 add_text(s, Inches(1.5), Inches(2.6), Inches(10.3), Inches(1.8),
-          "Ten years from now, you won't remember the deadline\nyou missed sleep over. "
-          "You'll remember whether you sent it.",
-          size=28, color=INK, font=FONT_HEAD, italic=True, align=PP_ALIGN.CENTER, line_spacing=1.25)
+         "Ten years from now, you won't remember the deadline\nyou missed sleep over. "
+         "You'll remember whether you sent it.",
+         size=28, color=INK, font=FONT_HEAD, italic=True, align=PP_ALIGN.CENTER, line_spacing=1.25)
 add_text(s, Inches(1.5), Inches(4.6), Inches(10.3), Inches(0.6),
-          "So — what are you going to apply for?",
-          size=16, color=GRAY, font=FONT_BODY, align=PP_ALIGN.CENTER)
-set_notes(s, "End on the question, not a summary. Say thank you out loud after a pause — "
-             "don't put it on the slide.")
+         "So — what are you going to apply for?",
+         size=16, color=GRAY, font=FONT_BODY, align=PP_ALIGN.CENTER)
+set_notes(s, "End on the question, not a summary.")
 
 prs.save("ashwin_talk.pptx")
 print("Saved ashwin_talk.pptx")
