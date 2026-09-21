@@ -1,522 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ashwin Gupta - Interactive Deck</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-    :root {
-        --bg-color: #0d1117;
-        --card-bg: #161b22;
-        --accent-primary: #3b82f6;
-        --accent-secondary: #8b5cf6;
-        --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        --text-main: #f0f6fc;
-        --text-muted: #8b949e;
-        --border-color: #30363d;
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-main);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
-    }
-
-    /* Ambient background lighting */
-    .bg-glow {
-        position: fixed;
-        width: 600px;
-        height: 600px;
-        border-radius: 50%;
-        filter: blur(150px);
-        z-index: -1;
-        opacity: 0.15;
-        pointer-events: none;
-    }
-    .glow-1 { top: -200px; left: -200px; background: var(--accent-primary); }
-    .glow-2 { bottom: -200px; right: -200px; background: var(--accent-secondary); }
-
-    /* Top Navigation Header */
-    header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 2rem 5%;
-        max-width: 1400px;
-        width: 100%;
-        margin: 0 auto;
-    }
-
-    .logo {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        font-size: 1.25rem;
-        letter-spacing: -0.03em;
-        color: var(--text-main);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .logo span {
-        background: var(--accent-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .deck-counter {
-        font-size: 0.875rem;
-        color: var(--text-muted);
-        background: var(--card-bg);
-        padding: 0.5rem 1rem;
-        border-radius: 50px;
-        border: 1px solid var(--border-color);
-    }
-
-    /* Main Deck Layout */
-    main {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        max-width: 1200px;
-        width: 90%;
-        margin: 0 auto;
-        position: relative;
-    }
-
-    .page {
-        display: none;
-        width: 100%;
-        animation: fadeIn 0.4s ease forwards;
-    }
-
-    .page.active {
-        display: block;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Hero Section Styling (Page 1) */
-    .hero-grid {
-        display: grid;
-        grid-template-columns: 1fr 380px;
-        gap: 4rem;
-        align-items: center;
-    }
-
-    .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        color: #60a5fa;
-        padding: 0.375rem 1rem;
-        border-radius: 50px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-bottom: 1.5rem;
-    }
-
-    .hero-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: clamp(2.5rem, 4vw, 4rem);
-        font-weight: 700;
-        line-height: 1.1;
-        letter-spacing: -0.03em;
-        margin-bottom: 1.25rem;
-    }
-
-    .hero-title span {
-        background: var(--accent-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .hero-description {
-        font-size: 1.125rem;
-        color: var(--text-muted);
-        line-height: 1.6;
-        margin-bottom: 2.5rem;
-        max-width: 600px;
-    }
-
-    .hero-buttons {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.875rem 1.75rem;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-        border: none;
-    }
-
-    .btn-primary {
-        background: var(--accent-gradient);
-        color: white;
-        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
-    }
-
-    .btn-secondary {
-        background: var(--card-bg);
-        color: var(--text-main);
-        border: 1px solid var(--border-color);
-    }
-
-    .btn-secondary:hover {
-        background: #21262d;
-        border-color: var(--text-muted);
-        transform: translateY(-2px);
-    }
-
-    /* Pixel Avatar Box on Page 1 */
-    .pixel-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 1.25rem;
-        text-align: center;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        position: relative;
-    }
-
-    .pixel-card img {
-        width: 100%;
-        height: auto;
-        border-radius: 12px;
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
-        display: block;
-        border: 1px solid var(--border-color);
-    }
-
-    .pixel-caption {
-        margin-top: 0.75rem;
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        font-weight: 500;
-    }
-
-    /* Content Card Standard Layout for Other Pages */
-    .content-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 24px;
-        padding: 3rem;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    }
-
-    .section-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2.25rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        letter-spacing: -0.02em;
-    }
-
-    .section-subtitle {
-        color: var(--text-muted);
-        font-size: 1.1rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .grid-2 {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .card-item {
-        background: #0d1117;
-        border: 1px solid var(--border-color);
-        padding: 1.75rem;
-        border-radius: 16px;
-        transition: var(--transition);
-    }
-
-    .card-item:hover {
-        border-color: var(--accent-primary);
-        transform: translateY(-3px);
-    }
-
-    .card-item h3 {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.2rem;
-        margin-bottom: 0.75rem;
-        color: #fff;
-    }
-
-    .card-item p {
-        color: var(--text-muted);
-        font-size: 0.95rem;
-        line-height: 1.5;
-    }
-
-    /* Footer Navigation Controls */
-    footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 2rem 5%;
-        max-width: 1400px;
-        width: 100%;
-        margin: 0 auto;
-        border-top: 1px solid var(--border-color);
-    }
-
-    .nav-controls {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .nav-btn {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        color: var(--text-main);
-        padding: 0.75rem 1.25rem;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: var(--transition);
-    }
-
-    .nav-btn:hover:not(:disabled) {
-        background: #21262d;
-        border-color: var(--accent-primary);
-        color: var(--accent-primary);
-    }
-
-    .nav-btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    .progress-dots {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--border-color);
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .dot.active {
-        background: var(--accent-primary);
-        box-shadow: 0 0 10px var(--accent-primary);
-    }
-
-    @media (max-width: 968px) {
-        .hero-grid {
-            grid-template-columns: 1fr;
-            gap: 2.5rem;
-            text-align: center;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ashwin Gupta - Interactive Deck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#07080a',
+                            800: '#0f1115',
+                            700: '#181c24',
+                            600: '#212631',
+                        }
+                    }
+                }
+            }
         }
-        .hero-buttons {
-            justify-content: center;
+    </script>
+    <style>
+        /* Custom scrollbar and base adjustments */
+        body {
+            background-color: #07080a;
+            color: #f3f4f6;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
         }
-        .hero-description {
-            margin-left: auto;
-            margin-right: auto;
+        .glass-panel {
+            background: rgba(24, 28, 36, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-    }
-</style>
+        .glow-effect {
+            box-shadow: 0 0 50px -10px rgba(59, 130, 246, 0.15);
+        }
+        .slide-transition {
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-blue-500 selection:text-white">
 
-    <div class="bg-glow glow-1"></div>
-    <div class="bg-glow glow-2"></div>
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <header>
-        <div class="logo">
-            Ashwin <span>Gupta</span>
+    <header class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_12px_rgba(59,130,246,0.8)]"></div>
+            <span class="font-display font-bold text-lg tracking-tight text-white">Ashwin Gupta</span>
         </div>
-        <div class="deck-counter" id="deckCounter">Page 1 of 4</div>
+        <div class="glass-panel px-4 py-1.5 rounded-full text-xs font-medium tracking-wide text-gray-400 border border-white/10" id="slideIndicator">
+            Slide 1 of 5
+        </div>
     </header>
 
-    <main>
-        <section class="page active" id="page-1">
-            <div class="hero-grid">
-                <div>
-                    <div class="hero-badge">
+    <main class="w-full max-w-6xl mx-auto px-6 flex-grow flex items-center justify-center relative my-auto py-8">
+        
+        <section class="slide absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center slide-transition transform translate-y-4" data-slide="1">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wide uppercase">
                         <i class="fa-solid fa-sparkles"></i> Interactive Portfolio Deck
                     </div>
-                    <h1 class="hero-title">Bridging Law, Design & <span>Technology</span></h1>
-                    <p class="hero-description">
-                        Exploring the intersections of Contract Lifecycle Management, Legal Design, and Cross-Border Compliance. Welcome to my interactive portfolio.
+                    <h1 class="font-display text-4xl sm:text-6xl font-bold tracking-tight text-white leading-[1.1]">
+                        Bridging Law, Design & <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Technology</span>
+                    </h1>
+                    <p class="text-gray-400 text-lg font-normal leading-relaxed max-w-xl">
+                        Welcome to my interactive deck. I operate at the intersection of contract lifecycle management, legal design visualization, and cross-border tech regulations.
                     </p>
-                    <div class="hero-buttons">
-                        <button class="btn btn-primary" onclick="nextPage()">
-                            Explore Deck <i class="fa-solid fa-arrow-right"></i>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick="nextSlide()" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold text-sm tracking-wide shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+                            Explore Deck <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
-                        <a href="mailto:contact@example.com" class="btn btn-secondary">
-                            Get in Touch <i class="fa-solid fa-envelope"></i>
+                        <a href="mailto:contact@ashwingupta.com" class="px-6 py-3.5 rounded-xl glass-panel hover:bg-white/5 text-gray-300 font-semibold text-sm tracking-wide transition-all flex items-center gap-2 border border-white/10">
+                            Get in Touch <i class="fa-solid fa-envelope text-xs"></i>
                         </a>
                     </div>
                 </div>
-
-                <div class="pixel-card">
-                    <img src="watermarked_img_14033317080370557217.jpg" alt="Ashwin Pixel Character">
-                    <div class="pixel-caption">Pixel Persona v1.0</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="page" id="page-2">
-            <div class="content-card">
-                <h2 class="section-title">Professional Experience</h2>
-                <p class="section-subtitle">Core expertise spanning contract operations, regulatory compliance, and international law.</p>
-                <div class="grid-2">
-                    <div class="card-item">
-                        <h3>PwC LLP — Gurugram</h3>
-                        <p>Associate within the Tax & Regulatory Services Contract Lifecycle Management (CLM) team, focusing on digital workflows and process optimization.</p>
-                    </div>
-                    <div class="card-item">
-                        <h3>Meilin International — Tokyo & Fukuoka</h3>
-                        <p>Foreign Attorney advising clients on cross-border corporate transactions, data privacy, and regulatory compliance frameworks.</p>
+                
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="glass-panel p-4 rounded-3xl glow-effect relative group max-w-xs w-full border border-white/10">
+                        <div class="overflow-hidden rounded-2xl bg-dark-900 border border-white/5 aspect-[3/4] flex items-center justify-center">
+                            <img src="watermarked_img_14033317080370557217.jpg" alt="Ashwin Pixel Persona" class="w-full h-full object-cover [image-rendering:pixelated]">
+                        </div>
+                        <div class="mt-4 px-2 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xs font-bold text-gray-200 tracking-wider uppercase">Pixel Persona</h3>
+                                <p class="text-[11px] text-gray-500">v1.0 Custom Avatar</p>
+                            </div>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="page" id="page-3">
-            <div class="content-card">
-                <h2 class="section-title">Key Initiatives & Focus</h2>
-                <p class="section-subtitle">Pioneering user-centered design and innovation in the legal tech landscape.</p>
-                <div class="grid-2">
-                    <div class="card-item">
-                        <h3>#MakingLawHuman</h3>
-                        <p>A flagship personal initiative aimed at simplifying dense legal documents using visual workflows, clear typography, and color psychology.</p>
+        <section class="slide absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center slide-transition transform translate-y-4" data-slide="2">
+            <div class="max-w-3xl mx-auto space-y-8 w-full">
+                <div class="space-y-3 text-center">
+                    <span class="text-blue-400 text-xs font-semibold uppercase tracking-widest">Core Focus</span>
+                    <h2 class="font-display text-3xl sm:text-4xl font-bold text-white">Professional Domain</h2>
+                    <p class="text-gray-400 text-base">Combining rigorous legal background with modern operational frameworks.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="glass-panel p-6 rounded-2xl border border-white/5 space-y-3 hover:border-blue-500/30 transition-all">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </div>
+                        <h3 class="font-display font-semibold text-lg text-white">Legal & Regulatory</h3>
+                        <p class="text-sm text-gray-400 leading-relaxed">Qualified Advocate (Bar Council of West Bengal) with deep expertise in cross-border tech regulations, GDPR, CCPA, and APPI.</p>
                     </div>
-                    <div class="card-item">
-                        <h3>Privacy & RegTech Compliance</h3>
-                        <p>Deep expertise in cross-border data protection frameworks including GDPR, CCPA, and Japan's APPI regulations.</p>
+                    <div class="glass-panel p-6 rounded-2xl border border-white/5 space-y-3 hover:border-purple-500/30 transition-all">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
+                            <i class="fa-solid fa-pen-nib"></i>
+                        </div>
+                        <h3 class="font-display font-semibold text-lg text-white">#MakingLawHuman</h3>
+                        <p class="text-sm text-gray-400 leading-relaxed">Pioneering Legal Design principles to transform dense, inaccessible legal contracts into visual, intuitive workflows.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="page" id="page-4">
-            <div class="content-card">
-                <h2 class="section-title">Education & Credentials</h2>
-                <p class="section-subtitle">Academic foundations and professional qualifications supporting global practice.</p>
-                <div class="grid-2">
-                    <div class="card-item">
-                        <h3>Kyushu University</h3>
-                        <p>Master of Laws (LL.M.) in IP Law & EU-DP Graduate Diploma in European Studies under the MEXT Scholarship program.</p>
+        <section class="slide absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center slide-transition transform translate-y-4" data-slide="3">
+            <div class="max-w-3xl mx-auto space-y-8 w-full">
+                <div class="space-y-3 text-center">
+                    <span class="text-blue-400 text-xs font-semibold uppercase tracking-widest">Career Track</span>
+                    <h2 class="font-display text-3xl sm:text-4xl font-bold text-white">Professional Experience</h2>
+                    <p class="text-gray-400 text-base">Scaling contract lifecycle operations and cross-border solutions.</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="glass-panel p-6 rounded-2xl border border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-display font-semibold text-lg text-white">PwC LLP</h3>
+                                <span class="px-2 py-0.5 text-[10px] bg-blue-500/10 text-blue-400 rounded border border-blue-500/20">Current</span>
+                            </div>
+                            <p class="text-sm text-gray-400">Associate — Tax & Regulatory Services (CLM Team)</p>
+                        </div>
+                        <span class="text-xs font-medium text-gray-500 glass-panel px-3 py-1 rounded-full">Gurugram, India</span>
                     </div>
-                    <div class="card-item">
-                        <h3>Amity Law School & Bar Council</h3>
-                        <p>BBA LL.B. (Hons.) graduate and India-qualified Advocate licensed by the Bar Council of West Bengal.</p>
+                    <div class="glass-panel p-6 rounded-2xl border border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="space-y-1">
+                            <h3 class="font-display font-semibold text-lg text-white">Meilin International Law Firm</h3>
+                            <p class="text-sm text-gray-400">Foreign Attorney / Paralegal</p>
+                        </div>
+                        <span class="text-xs font-medium text-gray-500 glass-panel px-3 py-1 rounded-full">Tokyo & Fukuoka, Japan</span>
                     </div>
                 </div>
             </div>
         </section>
+
+        <section class="slide absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center slide-transition transform translate-y-4" data-slide="4">
+            <div class="max-w-3xl mx-auto space-y-8 w-full">
+                <div class="space-y-3 text-center">
+                    <span class="text-blue-400 text-xs font-semibold uppercase tracking-widest">Academic Background</span>
+                    <h2 class="font-display text-3xl sm:text-4xl font-bold text-white">Education & Honors</h2>
+                    <p class="text-gray-400 text-base">Global academic foundations supporting cross-border competencies.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="glass-panel p-6 rounded-2xl border border-white/5 space-y-2">
+                        <div class="text-xs font-semibold text-blue-400">MEXT Scholar</div>
+                        <h3 class="font-display font-semibold text-lg text-white">Kyushu University</h3>
+                        <p class="text-sm text-gray-400">Master of Laws (LL.M.) in IP Law & EU-DP Graduate Diploma in European Studies (Fukuoka, Japan).</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border border-white/5 space-y-2">
+                        <div class="text-xs font-semibold text-purple-400">Professional Law</div>
+                        <h3 class="font-display font-semibold text-lg text-white">Amity Law School</h3>
+                        <p class="text-sm text-gray-400">BBA LL.B. (Hons.) & licensed Advocate enrolled with the Bar Council of West Bengal.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center slide-transition transform translate-y-4" data-slide="5">
+            <div class="max-w-2xl mx-auto text-center space-y-6 w-full glass-panel p-10 rounded-3xl border border-white/10">
+                <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center mx-auto text-xl">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </div>
+                <h2 class="font-display text-3xl font-bold text-white">Let's Connect</h2>
+                <p class="text-gray-400 text-base max-w-md mx-auto">
+                    Interested in legal design collaborations, contract automation workflows, or cross-border compliance discussions? Get in touch.
+                </p>
+                <div class="flex justify-center gap-4 pt-2">
+                    <a href="mailto:contact@ashwingupta.com" class="px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-500/25 transition-all">
+                        Send an Email
+                    </a>
+                    <button onclick="goToSlide(1)" class="px-8 py-3.5 rounded-xl glass-panel hover:bg-white/5 text-gray-300 font-semibold text-sm border border-white/10 transition-all">
+                        Restart Deck
+                    </button>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <footer>
-        <div class="progress-dots" id="progressDots">
-            <div class="dot active" onclick="goToPage(0)"></div>
-            <div class="dot" onclick="goToPage(1)"></div>
-            <div class="dot" onclick="goToPage(2)"></div>
-            <div class="dot" onclick="goToPage(3)"></div>
+    <footer class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center z-10">
+        <div class="flex items-center gap-2" id="dotIndicators">
+            <button onclick="goToSlide(1)" class="w-2.5 h-2.5 rounded-full bg-blue-500 transition-all dot-btn" data-dot="1"></button>
+            <button onclick="goToSlide(2)" class="w-2.5 h-2.5 rounded-full bg-white/20 hover:bg-white/40 transition-all dot-btn" data-dot="2"></button>
+            <button onclick="goToSlide(3)" class="w-2.5 h-2.5 rounded-full bg-white/20 hover:bg-white/40 transition-all dot-btn" data-dot="3"></button>
+            <button onclick="goToSlide(4)" class="w-2.5 h-2.5 rounded-full bg-white/20 hover:bg-white/40 transition-all dot-btn" data-dot="4"></button>
+            <button onclick="goToSlide(5)" class="w-2.5 h-2.5 rounded-full bg-white/20 hover:bg-white/40 transition-all dot-btn" data-dot="5"></button>
         </div>
-        <div class="nav-controls">
-            <button class="nav-btn" id="prevBtn" onclick="changePage(-1)" disabled>
-                <i class="fa-solid fa-arrow-left"></i> Previous
+        <div class="flex items-center gap-3">
+            <button onclick="prevSlide()" id="prevBtn" class="glass-panel px-4 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:bg-white/5 transition-all border border-white/10 flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-arrow-left"></i> Prev
             </button>
-            <button class="nav-btn" id="nextBtn" onclick="changePage(1)">
+            <button onclick="nextSlide()" id="nextBtn" class="glass-panel px-4 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:bg-white/5 transition-all border border-white/10 flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed">
                 Next <i class="fa-solid fa-arrow-right"></i>
             </button>
         </div>
     </footer>
 
     <script>
-        let currentPage = 0;
-        const pages = document.querySelectorAll('.page');
-        const dots = document.querySelectorAll('.dot');
-        const deckCounter = document.getElementById('deckCounter');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const totalPages = pages.length;
+        let currentSlide = 1;
+        const totalSlides = 5;
 
-        function updateDeck() {
-            pages.forEach((page, index) => {
-                page.classList.toggle('active', index === currentPage);
+        function updateSlides() {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => {
+                const slideNum = parseInt(slide.getAttribute('data-slide'));
+                if (slideNum === currentSlide) {
+                    slide.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                    slide.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+                } else {
+                    slide.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+                    slide.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                }
             });
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentPage);
+
+            // Update Slide Indicator
+            document.getElementById('slideIndicator').textContent = `Slide ${currentSlide} of ${totalSlides}`;
+
+            // Update Dots
+            const dots = document.querySelectorAll('.dot-btn');
+            dots.forEach(dot => {
+                const dotNum = parseInt(dot.getAttribute('data-dot'));
+                if (dotNum === currentSlide) {
+                    dot.classList.remove('bg-white/20', 'w-2.5');
+                    dot.classList.add('bg-blue-500', 'w-6');
+                } else {
+                    dot.classList.remove('bg-blue-500', 'w-6');
+                    dot.classList.add('bg-white/20', 'w-2.5');
+                }
             });
-            deckCounter.textContent = `Page ${currentPage + 1} of ${totalPages}`;
-            prevBtn.disabled = currentPage === 0;
-            nextBtn.disabled = currentPage === totalPages - 1;
+
+            // Update Buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
         }
 
-        function changePage(direction) {
-            currentPage += direction;
-            if (currentPage < 0) currentPage = 0;
-            if (currentPage >= totalPages) currentPage = totalPages - 1;
-            updateDeck();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function nextPage() {
-            if (currentPage < totalPages - 1) {
-                changePage(1);
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlides();
             }
         }
 
-        function goToPage(index) {
-            currentPage = index;
-            updateDeck();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlides();
+            }
         }
 
+        function goToSlide(n) {
+            if (n >= 1 && n <= totalSlides) {
+                currentSlide = n;
+                updateSlides();
+            }
+        }
+
+        // Keyboard navigation support
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' && currentPage < totalPages - 1) {
-                changePage(1);
-            } else if (e.key === 'ArrowLeft' && currentPage > 0) {
-                changePage(-1);
+            if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                prevSlide();
             }
         });
+
+        // Initialize first slide view
+        updateSlides();
     </script>
 </body>
 </html>
