@@ -1,478 +1,565 @@
-"""
-ashwin_talk.pptx generator
-Apple-light editorial deck, built with python-pptx.
-Run: python build_deck.py
-"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ashwin Gupta | Interactive Deck</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0f1115;
+            --bg-secondary: #181b22;
+            --bg-card: #212631;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
-from pptx.enum.shapes import MSO_SHAPE
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-# ---------------------------------------------------------------- palette --
-BG = RGBColor(0xF5, 0xF5, 0xF7)        # warm off-white / matte silver
-CARD = RGBColor(0xFF, 0xFF, 0xFF)      # pure white
-INK = RGBColor(0x1D, 0x1D, 0x1F)       # deep charcoal
-GRAY = RGBColor(0x86, 0x86, 0x8B)      # muted gray
-VERMILION = RGBColor(0xC8, 0x38, 0x24) # accent
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-FONT_HEAD = "Helvetica Neue"
-FONT_BODY = "Helvetica Neue"
-FONT_MONO = "Courier New"
+        /* Ambient Background Glows */
+        .ambient-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .glow-1 { top: -200px; left: -200px; background: rgba(59, 130, 246, 0.2); }
+        .glow-2 { bottom: -200px; right: -200px; background: rgba(139, 92, 246, 0.15); }
 
-SLIDE_W = Inches(13.33)
-SLIDE_H = Inches(7.5)
-MARGIN = Inches(0.9)
+        /* Top Navigation / Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 4%;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
 
-prs = Presentation()
-prs.slide_width = SLIDE_W
-prs.slide_height = SLIDE_H
-BLANK = prs.slide_layouts[6]
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #fff 30%, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
+        .logo-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-blue);
+        }
 
-# ---------------------------------------------------------------- helpers --
-def add_slide():
-    slide = prs.slides.add_slide(BLANK)
-    bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, SLIDE_W, SLIDE_H)
-    bg.fill.solid()
-    bg.fill.fore_color.rgb = BG
-    bg.line.fill.background()
-    bg.shadow.inherit = False
-    spTree = slide.shapes._spTree
-    spTree.remove(bg._element)
-    spTree.insert(2, bg._element)
-    return slide
+        .deck-counter {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
 
+        /* Main Container & Pages */
+        .main-container {
+            max-width: 1200px;
+            width: 90%;
+            margin: 0 auto;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
 
-def add_card(slide, left, top, width, height, fill=CARD, line_color=None, radius=True):
-    shape_type = MSO_SHAPE.ROUNDED_RECTANGLE if radius else MSO_SHAPE.RECTANGLE
-    card = slide.shapes.add_shape(shape_type, left, top, width, height)
-    if radius:
-        try:
-            card.adjustments[0] = 0.045
-        except Exception:
-            pass
-    card.fill.solid()
-    card.fill.fore_color.rgb = fill
-    if line_color is None:
-        card.line.fill.background()
-    else:
-        card.line.color.rgb = line_color
-        card.line.width = Pt(1)
-    card.shadow.inherit = False
-    return card
+        .page {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
 
+        .page.active {
+            display: block;
+        }
 
-def add_text(slide, left, top, width, height, text, size=18, color=INK,
-             bold=False, italic=False, align=PP_ALIGN.LEFT, font=FONT_BODY,
-             anchor=MSO_ANCHOR.TOP, line_spacing=1.0):
-    box = slide.shapes.add_textbox(left, top, width, height)
-    tf = box.text_frame
-    tf.word_wrap = True
-    tf.vertical_anchor = anchor
-    tf.margin_left = 0
-    tf.margin_right = 0
-    tf.margin_top = 0
-    tf.margin_bottom = 0
-    lines = text.split("\n")
-    for i, line in enumerate(lines):
-        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
-        p.alignment = align
-        if line_spacing != 1.0:
-            p.line_spacing = line_spacing
-        run = p.add_run()
-        run.text = line
-        run.font.size = Pt(size)
-        run.font.bold = bold
-        run.font.italic = italic
-        run.font.name = font
-        run.font.color.rgb = color
-    return box
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
+        /* PAGE 1 SPECIFIC STYLES */
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 4rem;
+            align-items: center;
+        }
 
-def add_rich(slide, left, top, width, height, segments, size=18, align=PP_ALIGN.LEFT,
-             font=FONT_BODY, anchor=MSO_ANCHOR.TOP, line_spacing=1.0):
-    box = slide.shapes.add_textbox(left, top, width, height)
-    tf = box.text_frame
-    tf.word_wrap = True
-    tf.vertical_anchor = anchor
-    tf.margin_left = 0
-    tf.margin_right = 0
-    tf.margin_top = 0
-    tf.margin_bottom = 0
-    p = tf.paragraphs[0]
-    p.alignment = align
-    if line_spacing != 1.0:
-        p.line_spacing = line_spacing
-    for text, color, bold, italic in segments:
-        run = p.add_run()
-        run.text = text
-        run.font.size = Pt(size)
-        run.font.bold = bold
-        run.font.italic = italic
-        run.font.name = font
-        run.font.color.rgb = color
-    return box
+        @media (max-width: 968px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+                text-align: center;
+            }
+            .hero-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
 
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-glow);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
 
-def kicker(slide, text, top=Inches(0.7)):
-    add_text(slide, MARGIN, top, Inches(8), Inches(0.4), text,
-             size=12, color=GRAY, font=FONT_MONO, align=PP_ALIGN.LEFT)
+        .hero-title {
+            font-size.clamp: 2.5rem, 4vw, 4rem;
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.25rem;
+        }
 
+        .hero-title span {
+            background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-def set_notes(slide, text):
-    slide.notes_slide.notes_text_frame.text = text
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+        }
 
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
 
-# ================================================================= SLIDE 1
-s = add_slide()
-kicker(s, "a talk for amity law students, in the hall i once sat in")
-add_rich(s, MARGIN, Inches(1.7), Inches(11.5), Inches(3.2),
-         [("hey i am ", INK, False, False), ("ashwin", VERMILION, False, True)],
-         size=60, font=FONT_HEAD, line_spacing=1.0)
-add_text(s, MARGIN, Inches(3.3), Inches(10.5), Inches(1.4),
-         "and the Japanese government rejected me once. A year later, they gave me a scholarship anyway.",
-         size=24, color=INK, font=FONT_HEAD, line_spacing=1.15)
-add_text(s, MARGIN, Inches(6.4), Inches(6), Inches(0.5),
-         "0 DAYS MARGIN ON THE DEADLINE     ·     10 DAYS THE POST TOOK TO ARRIVE",
-         size=11, color=GRAY, font=FONT_MONO)
-set_notes(s, "Say the line as written, don't perform it. Let the silence after "
-             "'gave me a scholarship anyway' sit for a beat before moving on.")
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            border: none;
+        }
 
-# ================================================================= SLIDE 2
-s = add_slide()
-kicker(s, "chapter one")
-add_text(s, MARGIN, Inches(1.3), Inches(11), Inches(1.8),
-         "A talk for Amity law students,\nin the hall I once sat in.",
-         size=44, color=INK, font=FONT_HEAD, line_spacing=1.05)
-add_rich(s, MARGIN, Inches(3.6), Inches(9.5), Inches(1.6),
-         [("I almost didn't apply ", INK, False, True),
-            ("to the thing that changed my life.", INK, False, False)],
-         size=22, font=FONT_HEAD, line_spacing=1.2)
-add_text(s, MARGIN, Inches(4.7), Inches(9.5), Inches(1.5),
-         "Not because I didn't want it. Because wanting it, out loud, felt riskier "
-         "than not trying at all. If that sounds familiar, good. Stay a while.",
-         size=16, color=GRAY, font=FONT_BODY, line_spacing=1.3)
-set_notes(s, "This is the thesis of the whole talk, said early and plainly. Don't rush it.")
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
 
-# ================================================================= SLIDE 3
-s = add_slide()
-kicker(s, "chapter two — the evidence")
-add_text(s, MARGIN, Inches(1.3), Inches(7), Inches(1.6),
-         "Bad photo.\nWorse haircut.", size=44, color=INK, font=FONT_HEAD, line_spacing=1.05)
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
+        }
 
-card_l, card_t, card_w, card_h = Inches(8.2), Inches(1.4), Inches(4.2), Inches(2.6)
-add_card(s, card_l, card_t, card_w, card_h, fill=CARD)
-add_text(s, card_l + Inches(0.3), card_t + Inches(0.25), Inches(3.6), Inches(0.3),
-         "AMITY UNIVERSITY", size=10, color=GRAY, font=FONT_MONO)
-add_card(s, card_l + Inches(0.3), card_t + Inches(0.7), Inches(1.1), Inches(1.4), fill=BG, radius=False)
-add_text(s, card_l + Inches(1.6), card_t + Inches(0.75), Inches(2.3), Inches(0.4),
-         "Ashwin", size=18, color=INK, font=FONT_HEAD, bold=True)
-add_text(s, card_l + Inches(1.6), card_t + Inches(1.2), Inches(2.4), Inches(0.6),
-         "B.A. LL.B. · Batch of '17\nID: undisclosed, mercifully",
-         size=10, color=GRAY, font=FONT_MONO, line_spacing=1.2)
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
 
-add_text(s, MARGIN, Inches(4.3), Inches(10), Inches(1.6),
-         "Kept it anyway — you don't throw out the evidence. The name on this "
-         "degree didn't decide what I got to do next. I did.",
-         size=18, color=INK, font=FONT_HEAD, line_spacing=1.3)
-set_notes(s, "First real laugh lives here. Lean into the haircut line, self-deprecating, "
-             "then pivot into the 'I did' line so it lands as the point, not just a joke.")
+        .btn-secondary:hover {
+            background: var(--bg-card);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
 
-# ================================================================= SLIDE 4
-s = add_slide()
-kicker(s, "an interactive confession")
-add_text(s, MARGIN, Inches(1.2), Inches(11), Inches(1.6),
-         "We put a stupid amount of pressure\non twenty-year-olds to have a five-year plan.",
-         size=32, color=INK, font=FONT_HEAD, line_spacing=1.1)
+        /* Exact Pixel Character Integration */
+        .pixel-card-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
 
-add_card(s, MARGIN, Inches(3.3), Inches(5.4), Inches(2.8), fill=CARD)
-add_text(s, MARGIN + Inches(0.4), Inches(3.6), Inches(4.6), Inches(0.4),
-         "A FIVE-YEAR PLAN", size=12, color=GRAY, font=FONT_MONO)
-add_text(s, MARGIN + Inches(0.4), Inches(4.2), Inches(4.6), Inches(1.5),
-         "Some of you have one.\nGenuinely — respect.",
-         size=22, color=GRAY, font=FONT_HEAD, italic=True, line_spacing=1.2)
+        .pixel-card-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 24px;
+            filter: blur(20px);
+            opacity: 0.3;
+            z-index: -1;
+        }
 
-right_left = Inches(7.1)
-add_card(s, right_left, Inches(3.3), Inches(5.4), Inches(2.8), fill=CARD)
-add_text(s, right_left + Inches(0.4), Inches(3.6), Inches(4.6), Inches(0.4),
-         "\"LET ME SURVIVE THIS SEMESTER\"", size=12, color=VERMILION, font=FONT_MONO)
-add_text(s, right_left + Inches(0.4), Inches(4.2), Inches(4.6), Inches(1.7),
-         "Also a plan.\nNobody tells you this counts.",
-         size=22, color=INK, font=FONT_HEAD, italic=True, line_spacing=1.2)
-set_notes(s, "Ask for a show of hands on who has a real five-year plan. Acknowledge them "
-             "honestly, then land on the right card without framing it as an underdog win.")
+        .pixel-avatar-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            max-width: 340px;
+            width: 100%;
+        }
 
-# ================================================================= SLIDE 5
-s = add_slide()
-kicker(s, "chapter three — the crucial one")
-add_text(s, MARGIN, Inches(1.2), Inches(10.5), Inches(1.4),
-         "Amity is not your excuse.", size=44, color=INK, font=FONT_HEAD)
+        .pixel-avatar-img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            border: 1px solid var(--border-color);
+        }
 
-add_card(s, MARGIN, Inches(2.9), Inches(7.4), Inches(2.1), fill=CARD)
-add_text(s, MARGIN + Inches(0.4), Inches(3.15), Inches(6.6), Inches(0.35),
-         "ORGANISATIONAL BEHAVIOUR — CLASS NOTES", size=11, color=VERMILION, font=FONT_MONO)
-add_text(s, MARGIN + Inches(0.4), Inches(3.6), Inches(6.6), Inches(1.3),
-         "Dipanwita Ma'am's class. Nobody in that room was thinking "
-         "\"this will matter someday.\" Everyone was thinking about the exam, "
-         "and honestly, lunch.",
-         size=16, color=INK, font=FONT_BODY, line_spacing=1.3)
+        .pixel-caption {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-add_text(s, MARGIN, Inches(5.35), Inches(10.5), Inches(1.3),
-         "An easy college is not the same thing as an easy ceiling. "
-         "Nobody hands you that ceiling. You build it yourself.",
-         size=18, color=GRAY, font=FONT_HEAD, italic=True, line_spacing=1.3)
-set_notes(s, "Say the Amity jokes out loud yourself first, before the room does.")
+        /* Generic Content Styles for Other Pages */
+        .content-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
 
-# ================================================================= SLIDE 6
-s = add_slide()
-kicker(s, "chapter four")
-add_text(s, MARGIN, Inches(1.2), Inches(11), Inches(1.4),
-         "Then college got cancelled, sort of.", size=38, color=INK, font=FONT_HEAD)
-add_text(s, MARGIN, Inches(2.4), Inches(10.5), Inches(1.3),
-         "Classrooms became screens. You could attend a full day of lectures "
-         "without changing out of pyjamas — and most of us did, repeatedly.",
-         size=17, color=GRAY, font=FONT_BODY, line_spacing=1.3)
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
 
-tile_w = Inches(3.55)
-tile_gap = Inches(0.25)
-tile_top = Inches(3.9)
-tiles = [
-    ("01 / BEFORE", "The version of college\nyou actually signed up for.", GRAY, CARD),
-    ("02 / 2020", "The world said \"nope,\ndifferent plan now.\"\nNobody asked us.", VERMILION, CARD),
-    ("03 / AFTER", "Same question waiting\non the other side:\nokay, now what?", GRAY, CARD),
-]
-for i, (label, body, label_color, fill) in enumerate(tiles):
-    left = MARGIN + i * (tile_w + tile_gap)
-    add_card(s, left, tile_top, tile_w, Inches(2.4), fill=fill)
-    add_text(s, left + Inches(0.3), tile_top + Inches(0.25), tile_w - Inches(0.6), Inches(0.35),
-             label, size=11, color=label_color, font=FONT_MONO)
-    add_text(s, left + Inches(0.3), tile_top + Inches(0.75), tile_w - Inches(0.6), Inches(1.5),
-             body, size=15, color=INK, font=FONT_HEAD, line_spacing=1.25)
-set_notes(s, "Keep this fast — everyone in the room lived it.")
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
 
-# ================================================================= SLIDE 7
-s = add_slide()
-kicker(s, "chapter five")
-add_text(s, MARGIN, Inches(1.3), Inches(11), Inches(1.4),
-         "Then I found Japan, by accident.", size=40, color=INK, font=FONT_HEAD)
-add_text(s, MARGIN, Inches(2.6), Inches(10.3), Inches(1.8),
-         "No childhood dream. I wasn't the kid drawing torii gates in the margins. "
-         "One random evening, curiosity, a rabbit hole of reading until 1am — which I "
-         "generously called \"research\" the next morning.",
-         size=18, color=INK, font=FONT_BODY, line_spacing=1.35)
-set_notes(s, "Keep this light and quick.")
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
 
-# ================================================================= SLIDE 8
-s = add_slide()
-kicker(s, "chapter five, continued")
-add_card(s, MARGIN, Inches(1.4), Inches(10.8), Inches(2.6), fill=CARD, line_color=None)
-add_text(s, MARGIN + Inches(0.5), Inches(1.7), Inches(9.8), Inches(0.35),
-         "EMBASSY RECOMMENDATION ROUTE — YEAR ONE", size=11, color=GRAY, font=FONT_MONO)
-add_text(s, MARGIN + Inches(0.5), Inches(2.15), Inches(4), Inches(0.6),
-         "REJECTED", size=28, color=VERMILION, font=FONT_HEAD, bold=True)
-add_text(s, MARGIN + Inches(0.5), Inches(2.95), Inches(9.5), Inches(0.9),
-         "More applicants. Fewer seats. Zero mercy. I got a polite no.",
-         size=18, color=INK, font=FONT_BODY, line_spacing=1.3)
-set_notes(s, "Say 'I got a polite no' flat, no self-pity.")
+        .card-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1.75rem;
+            border-radius: 16px;
+            transition: var(--transition);
+        }
 
-# ================================================================= SLIDE 9
-s = add_slide()
-kicker(s, "chapter six — the gamble")
-add_text(s, MARGIN, Inches(1.1), Inches(10), Inches(1.1),
-         "The courier gamble.", size=38, color=INK, font=FONT_HEAD)
+        .card-item:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-3px);
+        }
 
-receipt_l, receipt_t, receipt_w, receipt_h = MARGIN, Inches(2.2), Inches(7.2), Inches(4.5)
-add_card(s, receipt_l, receipt_t, receipt_w, receipt_h, fill=CARD)
-add_text(s, receipt_l + Inches(0.4), receipt_t + Inches(0.3), Inches(4.5), Inches(0.3),
-         "INTL. EXPRESS COURIER", size=11, color=GRAY, font=FONT_MONO)
+        .card-item h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            color: #fff;
+        }
 
-rows = [
-    ("ORIGIN", "NEW DELHI, IN"),
-    ("DESTINATION", "FUKUOKA, JP"),
-    ("CONTENTS", "APPLICATION DOCS"),
-    ("SERVICE", "INTL. EXPRESS"),
-    ("EST. TRANSIT", "7–10 DAYS"),
-    ("STATUS", "DISPATCHED"),
-]
-row_top = receipt_t + Inches(0.9)
-for label, val in rows:
-    add_text(s, receipt_l + Inches(0.4), row_top, Inches(2.2), Inches(0.35),
-             label, size=11, color=GRAY, font=FONT_MONO)
-    add_text(s, receipt_l + Inches(2.8), row_top, Inches(3.6), Inches(0.35),
-             val, size=11, color=(VERMILION if label == "STATUS" else INK), font=FONT_MONO)
-    row_top += Inches(0.42)
+        .card-item p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
 
-add_text(s, receipt_l + Inches(0.4), receipt_t + Inches(3.75), Inches(6.4), Inches(0.65),
-         "please don't copy this bit",
-         size=12, color=GRAY, font=FONT_BODY, italic=True)
+        /* Footer Controls */
+        footer {
+            padding: 2rem 4%;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+        }
 
-stamp = s.shapes.add_shape(MSO_SHAPE.OVAL, Inches(9.1), Inches(2.4), Inches(3.4), Inches(1.9))
-stamp.rotation = -8
-stamp.fill.background()
-stamp.line.color.rgb = VERMILION
-stamp.line.width = Pt(2.5)
-stamp.shadow.inherit = False
-stamp_tf = stamp.text_frame
-stamp_tf.word_wrap = True
-stamp_tf.margin_left = Inches(0.1)
-stamp_tf.margin_right = Inches(0.1)
-sp = stamp_tf.paragraphs[0]
-sp.alignment = PP_ALIGN.CENTER
-srun = sp.add_run()
-srun.text = "0 DAYS\nMARGIN"
-srun.font.size = Pt(20)
-srun.font.bold = True
-srun.font.color.rgb = VERMILION
-srun.font.name = FONT_MONO
+        .nav-controls {
+            display: flex;
+            gap: 1rem;
+        }
 
-add_text(s, Inches(9.0), Inches(4.6), Inches(3.6), Inches(2),
-         "Handed over exactly one day before the post deadline. The clerk asked "
-         "if I was sure this would make it. I said yes. I was not sure.",
-         size=13, color=GRAY, font=FONT_BODY, line_spacing=1.3)
-set_notes(s, "Your best visual — let it hold the room a few extra seconds.")
+        .nav-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
 
-# ================================================================= SLIDE 10
-s = add_slide()
-kicker(s, "chapter seven")
-add_text(s, MARGIN, Inches(1.3), Inches(10), Inches(1.2),
-         "Then, nothing. For months.", size=40, color=INK, font=FONT_HEAD)
+        .nav-btn:hover:not(:disabled) {
+            background: var(--bg-card);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
 
-months = ["JAN", "FEB", "MAR", "APR"]
-pill_w = Inches(1.6)
-pill_gap = Inches(0.5)
-pill_top = Inches(3.1)
-start_left = MARGIN
-for i, m in enumerate(months):
-    left = start_left + i * (pill_w + pill_gap)
-    is_last = (i == len(months) - 1)
-    pill = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, pill_top, pill_w, Inches(0.8))
-    try:
-        pill.adjustments[0] = 0.5
-    except Exception:
-        pass
-    pill.fill.solid()
-    pill.fill.fore_color.rgb = CARD
-    if is_last:
-        pill.line.color.rgb = VERMILION
-        pill.line.width = Pt(1.5)
-    else:
-        pill.line.fill.background()
-    pill.shadow.inherit = False
-    ptf = pill.text_frame
-    ptf.word_wrap = False
-    pp = ptf.paragraphs[0]
-    pp.alignment = PP_ALIGN.CENTER
-    prun = pp.add_run()
-    prun.text = m
-    prun.font.size = Pt(14)
-    prun.font.name = FONT_MONO
-    prun.font.color.rgb = VERMILION if is_last else GRAY
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
 
-add_text(s, MARGIN, Inches(4.4), Inches(10.3), Inches(1.8),
-         "No tracking number. No update. No way to check in. You send something "
-         "out, and then you just live with the not-knowing — and mostly, you go "
-         "back to class and forget about it.",
-         size=18, color=INK, font=FONT_BODY, line_spacing=1.35)
-set_notes(s, "Slow down here — this is the emotional trough.")
+        .quick-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
 
-# ================================================================= SLIDE 11
-s = add_slide()
-kicker(s, "chapter eight")
-stamp2 = s.shapes.add_shape(MSO_SHAPE.OVAL, Inches(4.9), Inches(1.5), Inches(3.5), Inches(3.5))
-stamp2.rotation = -6
-stamp2.fill.background()
-stamp2.line.color.rgb = VERMILION
-stamp2.line.width = Pt(3)
-stamp2.shadow.inherit = False
-s2tf = stamp2.text_frame
-s2tf.word_wrap = True
-s2p = s2tf.paragraphs[0]
-s2p.alignment = PP_ALIGN.CENTER
-s2run = s2p.add_run()
-s2run.text = "SELECTED"
-s2run.font.size = Pt(34)
-s2run.font.bold = True
-s2run.font.name = FONT_HEAD
-s2run.font.color.rgb = VERMILION
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
 
-add_text(s, Inches(4.9), Inches(5.15), Inches(3.5), Inches(0.7),
-         "MEXT SCHOLARSHIP · APRIL\nKyushu University",
-         size=11, color=GRAY, font=FONT_MONO, align=PP_ALIGN.CENTER, line_spacing=1.2)
-add_text(s, Inches(1.9), Inches(6.3), Inches(9.5), Inches(0.8),
-         "You can't lose an opportunity you never applied for. But you also can't win it.",
-         size=16, color=INK, font=FONT_HEAD, italic=True, align=PP_ALIGN.CENTER)
-set_notes(s, "Say what you actually expected before opening it.")
+        .dot.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
 
-# ================================================================= SLIDE 12
-s = add_slide()
-kicker(s, "chapter nine, Fukuoka")
-add_text(s, MARGIN, Inches(1.2), Inches(11), Inches(1.2),
-         "Landing, and immediately drowning a little.",
-         size=34, color=INK, font=FONT_HEAD)
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
 
-col_w = Inches(5.4)
-left_col = MARGIN
-right_col = Inches(7.1)
-col_top = Inches(2.7)
-add_card(s, left_col, col_top, col_w, Inches(3.6), fill=CARD)
-add_text(s, left_col + Inches(0.4), col_top + Inches(0.3), col_w - Inches(0.8), Inches(0.35),
-         "WHAT TRAVELS WELL ONLINE", size=11, color=GRAY, font=FONT_MONO)
-add_text(s, left_col + Inches(0.4), col_top + Inches(0.8), col_w - Inches(0.8), Inches(2.6),
-         "Cleanliness\nPunctuality\nConvenience stores\nFood, nature, the universities",
-         size=16, color=INK, font=FONT_BODY, line_spacing=1.5)
+    <header>
+        <div class="logo">
+            <div class="logo-dot"></div>
+            Ashwin Gupta
+        </div>
+        <div class="deck-counter" id="deckCounter">Page 1 of 4</div>
+    </header>
 
-add_card(s, right_col, col_top, col_w, Inches(3.6), fill=CARD)
-add_text(s, right_col + Inches(0.4), col_top + Inches(0.3), col_w - Inches(0.8), Inches(0.35),
-         "WHAT DOESN'T MAKE THE REEL", size=11, color=VERMILION, font=FONT_MONO)
-add_text(s, right_col + Inches(0.4), col_top + Inches(0.8), col_w - Inches(0.8), Inches(2.6),
-         "The language wall\nGetting lost, badly\nStarting from zero, socially\n"
-         "A washing machine that won the first round",
-         size=16, color=INK, font=FONT_BODY, line_spacing=1.5)
-set_notes(s, "Tell the wrong-platform-at-Hakata story out loud.")
+    <main class="main-container">
 
-# ================================================================= SLIDE 13
-s = add_slide()
-kicker(s, "chapter ten — the useful part")
-add_text(s, MARGIN, Inches(1.1), Inches(10.5), Inches(1.1),
-         "What actually helped, in the end.", size=34, color=INK, font=FONT_HEAD)
+        <section class="page active" id="page-1">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <div class="badge">
+                        <i class="fa-solid fa-sparkles"></i> Interactive Portfolio Deck
+                    </div>
+                    <h1 class="hero-title">Bridging Law, Design & <span>Technology</span></h1>
+                    <p class="hero-subtitle">
+                        Welcome to my professional interactive deck. Exploring the intersections of Contract Lifecycle Management, Legal Design, and Cross-Border Compliance.
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary" onclick="changePage(1)">
+                            Explore Deck <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <a href="mailto:ashwin@example.com" class="btn btn-secondary">
+                            Get in Touch <i class="fa-solid fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
 
-takeaways = [
-    ("1", "You can't lose a game\nyou don't play.", "Apply even when your odds look stupid. Especially then."),
-    ("2", "Ambition and certainty\nare not the same thing.", "It's okay to not have a roadmap. Nobody hands you one."),
-    ("3", "Take the boring classes\nseriously.", "Future-you doesn't get to choose what they'll need."),
-    ("4", "Are you using Amity\nproperly?", "Stop asking if it's good enough. Only one of those questions is about you."),
-]
-card_w = Inches(5.35)
-card_h = Inches(2.15)
-gap_x = Inches(0.3)
-gap_y = Inches(0.3)
-grid_top = Inches(2.55)
-for i, (num, title, sub) in enumerate(takeaways):
-    row = i // 2
-    col = i % 2
-    left = MARGIN + col * (card_w + gap_x)
-    top = grid_top + row * (card_h + gap_y)
-    add_card(s, left, top, card_w, card_h, fill=CARD)
-    add_text(s, left + Inches(0.35), top + Inches(0.2), Inches(1), Inches(0.5),
-             num, size=26, color=VERMILION, font=FONT_HEAD, bold=True)
-    add_text(s, left + Inches(0.35), top + Inches(0.75), card_w - Inches(0.7), Inches(0.75),
-             title, size=17, color=INK, font=FONT_HEAD, bold=True, line_spacing=1.1)
-    add_text(s, left + Inches(0.35), top + Inches(1.5), card_w - Inches(0.7), Inches(0.6),
-             sub, size=12, color=GRAY, font=FONT_BODY, line_spacing=1.2)
-set_notes(s, "This is the 'gyan section' — say that out loud.")
+                <div class="pixel-card-wrapper">
+                    <div class="pixel-avatar-container">
+                        <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/..." alt="Ashwin Pixel Avatar" class="pixel-avatar-img" id="pixelAvatar">
+                        <div class="pixel-caption">
+                            <i class="fa-solid fa-circle-dot" style="color: #3b82f6; font-size: 8px;"></i> Pixel Persona v1.0
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-# ================================================================= SLIDE 14
-s = add_slide()
-add_text(s, Inches(1.5), Inches(2.6), Inches(10.3), Inches(1.8),
-         "Ten years from now, you won't remember the deadline\nyou missed sleep over. "
-         "You'll remember whether you sent it.",
-         size=28, color=INK, font=FONT_HEAD, italic=True, align=PP_ALIGN.CENTER, line_spacing=1.25)
-add_text(s, Inches(1.5), Inches(4.6), Inches(10.3), Inches(0.6),
-         "So — what are you going to apply for?",
-         size=16, color=GRAY, font=FONT_BODY, align=PP_ALIGN.CENTER)
-set_notes(s, "End on the question, not a summary.")
+        <section class="page" id="page-2">
+            <div class="content-card">
+                <h2 class="section-title">Professional Journey</h2>
+                <p class="section-subtitle">A track record spanning corporate law, cross-border transactions, and legal optimization.</p>
+                <div class="grid-2">
+                    <div class="card-item">
+                        <h3>PwC LLP — Gurugram</h3>
+                        <p>Associate within the Tax & Regulatory Services Contract Lifecycle Management (CLM) team, scaling process efficiencies and digital workflows.</p>
+                    </div>
+                    <div class="card-item">
+                        <h3>Meilin International — Tokyo</h3>
+                        <p>Foreign Attorney advising on corporate compliance, cross-border investments, and structured legal frameworks between Japan and India.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-prs.save("ashwin_talk.pptx")
-print("Saved ashwin_talk.pptx")
+        <section class="page" id="page-3">
+            <div class="content-card">
+                <h2 class="section-title">Key Initiatives</h2>
+                <p class="section-subtitle">Pioneering user-centered approaches in complex legal environments.</p>
+                <div class="grid-2">
+                    <div class="card-item">
+                        <h3>#MakingLawHuman</h3>
+                        <p>A flagship personal initiative simplifying dense legal information via visual workflows, typography, and clear structures.</p>
+                    </div>
+                    <div class="card-item">
+                        <h3>Data Privacy & RegTech</h3>
+                        <p>Specialized focus on GDPR, CCPA, and APPI compliance frameworks combined with automated document reviews.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page" id="page-4">
+            <div class="content-card">
+                <h2 class="section-title">Credentials & Education</h2>
+                <p class="section-subtitle">Academic foundations supporting international practice.</p>
+                <div class="grid-2">
+                    <div class="card-item">
+                        <h3>Kyushu University</h3>
+                        <p>Master of Laws (LL.M.) in IP Law & EU-DP Graduate Diploma in European Studies under the MEXT Scholarship.</p>
+                    </div>
+                    <div class="card-item">
+                        <h3>Bar Council of West Bengal</h3>
+                        <p>India-qualified Advocate with a BBA LL.B. (Hons.) background from Amity Law School.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="quick-dots" id="quickDots">
+            <div class="dot active" onclick="goToPage(0)"></div>
+            <div class="dot" onclick="goToPage(1)"></div>
+            <div class="dot" onclick="goToPage(2)"></div>
+            <div class="dot" onclick="goToPage(3)"></div>
+        </div>
+        <div class="nav-controls">
+            <button class="nav-btn" id="prevBtn" onclick="changePage(-1)" disabled>
+                <i class="fa-solid fa-arrow-left"></i> Previous
+            </button>
+            <button class="nav-btn" id="nextBtn" onclick="changePage(1)">
+                Next <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        // Fallback embedded image if file reference string needs local resolution, 
+        // using the exact uploaded image source from the context session if available.
+        const pixelImageInput = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/..." // Fallback or updated dynamically
+        
+        let currentPage = 0;
+        const pages = document.querySelectorAll('.page');
+        const dots = document.querySelectorAll('.dot');
+        const deckCounter = document.getElementById('deckCounter');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const totalPages = pages.length;
+
+        // If the user uploaded an actual image file in the prompt context, let's load it into the img element directly if possible
+        const userUploadedImageSrc = "watermarked_img_14033317080370557217.jpg"; 
+        const avatarImgEl = document.getElementById('pixelAvatar');
+        if (avatarImgEl) {
+            avatarImgEl.src = userUploadedImageSrc;
+        }
+
+        function updateDeck() {
+            pages.forEach((page, index) => {
+                page.classList.toggle('active', index === currentPage);
+            });
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPage);
+            });
+            deckCounter.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage === totalPages - 1;
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            if (currentPage < 0) currentPage = 0;
+            if (currentPage >= totalPages) currentPage = totalPages - 1;
+            updateDeck();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goToPage(index) {
+            currentPage = index;
+            updateDeck();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentPage < totalPages - 1) {
+                changePage(1);
+            } else if (e.key === 'ArrowLeft' && currentPage > 0) {
+                changePage(-1);
+            }
+        });
+    </script>
+</body>
+</html>
